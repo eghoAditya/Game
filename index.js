@@ -43,22 +43,29 @@ class Player {
         this.frames = 0;
         this.sprites = {
             stand: {
-                right: spriteStandRight
+                right: spriteStandRight,
+                left: spriteStandLeft,
+                cropwidth: 177,
+                width: 66
             },
             run: {
-                right: spriteRunRight
+                right: spriteRunRight,
+                left: spriteRunLeft,
+                cropwidth: 341,
+                width: 127.875
             }
         }
 
         this.currentSprite = this.sprites.stand.right
+        this.currentCropwidth = 177
     }
 
     draw() {
         c.drawImage(
             this.currentSprite,
-            177 * this.frames,
+            this.currentCropwidth * this.frames,
             0,
-            177,
+            this.currentCropwidth,
             400,
             this.position.x,
             this.position.y,
@@ -68,7 +75,16 @@ class Player {
 
     update() {
         this.frames++
-        if (this.frames>28) this.frames = 0
+        if (this.frames > 59 && (this.currentSprite ==
+            this.sprites.stand.right || this.currentSprite ==
+            this.sprites.stand.left)
+        )
+            this.frames = 0
+        else if (this.frames > 29 && (this.currentSprite ==
+            this.sprites.run.right || this.currentSprite ==
+            this.sprites.run.left)
+        )
+            this.frames = 0
         this.draw();
         this.position.y += this.velocity.y;
         this.position.x += this.velocity.x;
@@ -116,8 +132,8 @@ function createImage(imgSrc) {
 let player = new Player();
     let platforms = [
         new Platform({ x: -1, y: 557 }),
-        new Platform({ x: 198, y: 257 }),
-        new Platform({ x: 498, y: 357 }),
+        new Platform({ x: 198, y: 557 }),
+        new Platform({ x: 598, y: 557 }),
         new Platform({ x: 998, y: 337 }),
         new Platform({ x: 1398, y: 157 }),
         new Platform({ x: 1698, y: 557 }),
@@ -150,8 +166,10 @@ let player = new Player();
             image: createImage('./imgs/hills.png'),  // Corrected image source --- © Code by | Aditya Tomar
             width: 10000
         })
-    ];
+];
+    
 
+    let currentKey 
     const keys = {
         right: { pressed: false },
         left: { pressed: false }
@@ -167,8 +185,8 @@ function init() {
      player = new Player();
      platforms = [
         new Platform({ x: -1, y: 557 }),
-        new Platform({ x: 198, y: 257 }),
-        new Platform({ x: 498, y: 357 }),
+        new Platform({ x: 198, y: 557 }),
+        new Platform({ x: 598, y: 557 }),
         new Platform({ x: 998, y: 337 }),
         new Platform({ x: 1398, y: 157 }),
         new Platform({ x: 1698, y: 557 }),
@@ -266,6 +284,43 @@ function animate() {
         }
     });
 
+//sprite switching
+
+    if (keys.right.pressed &&
+        currentKey == 'right' &&
+        player.currentSprite != player.sprites.run.right) {
+        player.frames = 1
+        player.currentSprite = player.sprites.run.right
+        player.currentCropwidth = player.sprites.run.cropwidth
+        player.width = player.sprites.run.width
+    }
+    else if (
+        keys.left.pressed &&
+        currentKey == 'left' &&
+        player.currentSprite != player.sprites.run.left)
+        {
+            player.currentSprite = player.sprites.run.left
+            player.currentCropwidth = player.sprites.run.cropwidth
+            player.width = player.sprites.run.width
+    }
+    else if (
+        !keys.left.pressed &&
+        currentKey == 'left' &&
+        player.currentSprite != player.sprites.stand.left)
+        {
+            player.currentSprite = player.sprites.stand.left
+            player.currentCropwidth = player.sprites.stand.cropwidth
+            player.width = player.sprites.stand.width
+    }
+    else if (!keys.right.pressed &&
+        currentKey == 'right' &&
+        player.currentSprite != player.sprites.stand.right)
+        {
+            player.currentSprite = player.sprites.stand.right
+            player.currentCropwidth = player.sprites.stand.cropwidth
+            player.width = player.sprites.stand.width
+        }
+
     // Winning condition check
     if (scrollOffset > 4600) {
         console.log('You Win');
@@ -285,6 +340,7 @@ addEventListener('keydown', ({ keyCode }) => {
         case 65:
             console.log('left');
             keys.left.pressed = true;
+            currentKey = 'left'
             break;
         case 83:
             console.log('down');
@@ -292,7 +348,7 @@ addEventListener('keydown', ({ keyCode }) => {
         case 68:
             console.log('right');
             keys.right.pressed = true;
-            player.currentSprite = player.sprites.run.right
+            currentKey = 'right'
             break;
         case 87:
             console.log('up');
@@ -306,6 +362,7 @@ addEventListener('keyup', ({ keyCode }) => {
         case 65:
             console.log('left');
             keys.left.pressed = false;
+            
             break;
         case 83:
             console.log('down');
@@ -313,6 +370,7 @@ addEventListener('keyup', ({ keyCode }) => {
         case 68:
             console.log('right');
             keys.right.pressed = false;
+            currentKey = 'right'
             break;
         case 87:
             console.log('up');
