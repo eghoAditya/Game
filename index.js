@@ -1,3 +1,4 @@
+// © Code by Aditya Tomar
 // Instead of importing the image directly, load it dynamically --- © Code by | Aditya Tomar
 const platformImage = new Image();
 platformImage.src = './imgs/platform.png';  
@@ -40,7 +41,7 @@ class Player {
 
         if (this.position.y + this.height + this.velocity.y <= canvas.height)
             this.velocity.y += gravity;
-        else this.velocity.y = 0;
+        
     }
 }
 
@@ -58,15 +59,17 @@ class Platform {
 }
 
 class GenericObject {
-    constructor({ x, y, image, width = canvas.width, height = canvas.height }) { // Added width and height parameters
+    constructor({ x, y, image, width = canvas.width, height = canvas.height }) { 
         this.position = { x, y };
         this.image = image;
         this.width = width;
         this.height = height;
     }
 
-    draw() {
-        c.drawImage(this.image, this.position.x, this.position.y, this.width, this.height); // Using this.width and this.height
+    draw(offsetX = 0) {
+        
+        c.drawImage(this.image, this.position.x + offsetX, this.position.y, this.width, this.height);
+        c.drawImage(this.image, this.position.x + offsetX + this.width, this.position.y, this.width, this.height);
     }
 }
 
@@ -76,37 +79,79 @@ function createImage(imgSrc) {
     image.src = imgSrc;
     return image;
 }
+let player = new Player();
+    let platforms = [
+        new Platform({ x: -1, y: 557 }),
+        new Platform({ x: 198, y: 557 }),
+        new Platform({ x: 498, y: 557 })
+    ];
 
-const player = new Player();
-const platforms = [
-    new Platform({ x: -1, y: 557 }),
-    new Platform({ x: 198, y: 557 })
-];
+    let genericObjects = [
+        new GenericObject({
+            x: 0,
+            y: 0,
+            image: createImage('./imgs/background.png'),  // Corrected image source --- © Code by | Aditya Tomar
+            width: canvas.width,  // Set background to cover the full canvas width --- © Code by | Aditya Tomar
+            height: canvas.height  // Set background to cover the full canvas height --- © Code by | Aditya Tomar
+        }),
 
-const genericObjects = [
-    new GenericObject({
-        x: 0,
-        y: 0,
-        image: createImage('./imgs/background.png'),  // Corrected image source --- © Code by | Aditya Tomar
-        width: canvas.width,  // Set background to cover the full canvas width --- © Code by | Aditya Tomar
-        height: canvas.height  // Set background to cover the full canvas height --- © Code by | Aditya Tomar
-    })
-];
+        new GenericObject({
+            x: 0,
+            y: 0,
+            image: createImage('./imgs/hills.png'),  // Corrected image source --- © Code by | Aditya Tomar
+            width: 2500
+        })
+    ];
 
-const keys = {
-    right: { pressed: false },
-    left: { pressed: false }
-};
+    const keys = {
+        right: { pressed: false },
+        left: { pressed: false }
+    };
 
-let scrollOffset = 0;
+    let scrollOffset = 0;
+    let backgroundOffset = 0;
 
+
+function init() {
+    
+
+     player = new Player();
+     platforms = [
+        new Platform({ x: -1, y: 557 }),
+        new Platform({ x: 198, y: 557 }),
+        new Platform({ x: 498, y: 557 })
+    ];
+
+     genericObjects = [
+        new GenericObject({
+            x: 0,
+            y: 0,
+            image: createImage('./imgs/background.png'),  // Corrected image source --- © Code by | Aditya Tomar
+            width: canvas.width,  // Set background to cover the full canvas width --- © Code by | Aditya Tomar
+            height: canvas.height  // Set background to cover the full canvas height --- © Code by | Aditya Tomar
+        }),
+
+        new GenericObject({
+            x: 0,
+            y: 0,
+            image: createImage('./imgs/hills.png'),  // Corrected image source --- © Code by | Aditya Tomar
+            width: 2500
+        })
+    ];
+
+     scrollOffset = 0;
+     backgroundOffset = 0; // Variable for background scrolling effect
+}
 function animate() {
     requestAnimationFrame(animate);
+    
+    // Clear the canvas
     c.fillStyle = 'white';
     c.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw the background and hills (adjust their position based on scrollOffset)
     genericObjects.forEach(genericObject => {
-        genericObject.draw();
+        genericObject.draw(-backgroundOffset % canvas.width); // Parallax effect for background
     });
     
     platforms.forEach(platform => {
@@ -114,6 +159,7 @@ function animate() {
     });
     player.update();
 
+    // Handle movement controls for the player
     if (keys.right.pressed && player.position.x < 400) {
         player.velocity.x = 5;
     } else if (keys.left.pressed && player.position.x > 100) {
@@ -121,21 +167,29 @@ function animate() {
     } else {
         player.velocity.x = 0;
 
-// Illusion of movement of the platform --- © Code by | Aditya Tomar
+        // Moving the platforms and generic objects (background, hills)
         if (keys.right.pressed) {
             scrollOffset += 5;
+            backgroundOffset += 2; // Slow background scroll for a parallax effect
             platforms.forEach(platform => {
                 platform.position.x -= 5;
             });
+            genericObjects.forEach(genericObject => {
+                genericObject.position.x -= 3;
+            });
         } else if (keys.left.pressed) {
             scrollOffset -= 5;
+            backgroundOffset -= 2;
             platforms.forEach(platform => {
                 platform.position.x += 5;
+            });
+            genericObjects.forEach(genericObject => {
+                genericObject.position.x += 3;
             });
         }
     }
 
-    // Platform collision detection --- © Code by | Aditya Tomar
+    // Platform collision detection
     platforms.forEach(platform => {
         if (
             player.position.y + player.height <= platform.position.y &&
@@ -147,8 +201,15 @@ function animate() {
         }
     });
 
-    if (scrollOffset > 2000) {
+    // Winning condition check
+    if (scrollOffset > 10000) {
         console.log('You Win');
+    }
+
+    //lose condition check
+    if (player.position.y > canvas.height) {
+        console.log('you lose')
+        init()
     }
 }
 
