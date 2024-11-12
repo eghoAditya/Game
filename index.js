@@ -1,15 +1,16 @@
-// Instead of importing the image directly, load it dynamically
+// Instead of importing the image directly, load it dynamically --- © Code by | Aditya Tomar
 const platformImage = new Image();
-platformImage.src = './imgs/platform.png';  // Path to the image
-
-// Log the image object to see it in the console
-console.log(platformImage);
+platformImage.src = './imgs/platform.png';  
+const background = new Image();
+background.src = './imgs/background.png';
+const hills = new Image();
+hills.src = './imgs/hills.png';
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = 1024;
+canvas.height = 576;
 
 const gravity = 0.5;
 
@@ -45,45 +46,73 @@ class Player {
 
 class Platform {
     constructor({ x, y }) {
-        this.position = {
-            x,
-            y
-        };
+        this.position = { x, y };
         this.width = 200;
         this.height = 20;
     }
 
     draw() {
-        // Draw the image on the platform instead of a fillRect
+// Draw the image on the platform instead of a fillRect --- © Code by | Aditya Tomar
         c.drawImage(platformImage, this.position.x, this.position.y, this.width, this.height);
     }
 }
 
+class GenericObject {
+    constructor({ x, y, image, width = canvas.width, height = canvas.height }) { // Added width and height parameters
+        this.position = { x, y };
+        this.image = image;
+        this.width = width;
+        this.height = height;
+    }
+
+    draw() {
+        c.drawImage(this.image, this.position.x, this.position.y, this.width, this.height); // Using this.width and this.height
+    }
+}
+
+// Fixed image source to use imgSrc parameter --- © Code by | Aditya Tomar
+function createImage(imgSrc) {   
+    const image = new Image();
+    image.src = imgSrc;
+    return image;
+}
+
 const player = new Player();
 const platforms = [
-    new Platform({ x: 200, y: 100 }),
-    new Platform({ x: 500, y: 200 })
+    new Platform({ x: -1, y: 557 }),
+    new Platform({ x: 198, y: 557 })
 ];
+
+const genericObjects = [
+    new GenericObject({
+        x: 0,
+        y: 0,
+        image: createImage('./imgs/background.png'),  // Corrected image source --- © Code by | Aditya Tomar
+        width: canvas.width,  // Set background to cover the full canvas width --- © Code by | Aditya Tomar
+        height: canvas.height  // Set background to cover the full canvas height --- © Code by | Aditya Tomar
+    })
+];
+
 const keys = {
-    right: {
-        pressed: false
-    },
-    left: {
-        pressed: false
-    }
+    right: { pressed: false },
+    left: { pressed: false }
 };
 
 let scrollOffset = 0;
 
 function animate() {
     requestAnimationFrame(animate);
-    c.clearRect(0, 0, canvas.width, canvas.height);
-    player.update();
+    c.fillStyle = 'white';
+    c.fillRect(0, 0, canvas.width, canvas.height);
+
+    genericObjects.forEach(genericObject => {
+        genericObject.draw();
+    });
     
-    // Draw all platforms
     platforms.forEach(platform => {
         platform.draw();
     });
+    player.update();
 
     if (keys.right.pressed && player.position.x < 400) {
         player.velocity.x = 5;
@@ -92,7 +121,7 @@ function animate() {
     } else {
         player.velocity.x = 0;
 
-        // Illusion of movement of the platform
+// Illusion of movement of the platform --- © Code by | Aditya Tomar
         if (keys.right.pressed) {
             scrollOffset += 5;
             platforms.forEach(platform => {
@@ -106,12 +135,14 @@ function animate() {
         }
     }
 
-    // Platform collision detection
+    // Platform collision detection --- © Code by | Aditya Tomar
     platforms.forEach(platform => {
-        if (player.position.y + player.height <= platform.position.y &&
+        if (
+            player.position.y + player.height <= platform.position.y &&
             player.position.y + player.height + player.velocity.y >= platform.position.y &&
             player.position.x + player.width >= platform.position.x &&
-            player.position.x <= platform.position.x + platform.width) {
+            player.position.x <= platform.position.x + platform.width
+        ) {
             player.velocity.y = 0;
         }
     });
@@ -158,7 +189,7 @@ addEventListener('keyup', ({ keyCode }) => {
             break;
         case 87:
             console.log('up');
-            player.velocity.y = -10;
+            player.velocity.y = 0; // Reset vertical velocity on key release --- © Code by | Aditya Tomar
             break;
     }
 });
