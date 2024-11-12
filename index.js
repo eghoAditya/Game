@@ -6,17 +6,30 @@ const background = new Image();
 background.src = './imgs/background.png';
 const hills = new Image();
 hills.src = './imgs/hills.png';
+const spriteRunLeft = new Image();
+spriteRunLeft.src = './imgs/spriteRunLeft.png'; // Correctly set src for spriteRunLeft
+
+const spriteRunRight = new Image();
+spriteRunRight.src = './imgs/spriteRunRight.png'; // Correctly set src for spriteRunRight
+
+const spriteStandLeft = new Image();
+spriteStandLeft.src = './imgs/spriteStandLeft.png'; // Correctly set src for spriteStandLeft
+
+const spriteStandRight = new Image();
+spriteStandRight.src = './imgs/spriteStandRight.png'; // Correctly set src for spriteStandRight
+
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = 1024;
-canvas.height = 576;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
 const gravity = 0.5;
 
 class Player {
     constructor() {
+        this.speed = 10
         this.position = {
             x: 100,
             y: 100
@@ -25,16 +38,37 @@ class Player {
             x: 0,
             y: 1
         };
-        this.width = 30;
-        this.height = 30;
+        this.width = 66;
+        this.height = 150;
+        this.frames = 0;
+        this.sprites = {
+            stand: {
+                right: spriteStandRight
+            },
+            run: {
+                right: spriteRunRight
+            }
+        }
+
+        this.currentSprite = this.sprites.stand.right
     }
 
     draw() {
-        c.fillStyle = 'red';
-        c.fillRect(this.position.x, this.position.y, this.width, this.height);
+        c.drawImage(
+            this.currentSprite,
+            177 * this.frames,
+            0,
+            177,
+            400,
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height);
     }
 
     update() {
+        this.frames++
+        if (this.frames>28) this.frames = 0
         this.draw();
         this.position.y += this.velocity.y;
         this.position.x += this.velocity.x;
@@ -82,8 +116,23 @@ function createImage(imgSrc) {
 let player = new Player();
     let platforms = [
         new Platform({ x: -1, y: 557 }),
-        new Platform({ x: 198, y: 557 }),
-        new Platform({ x: 498, y: 557 })
+        new Platform({ x: 198, y: 257 }),
+        new Platform({ x: 498, y: 357 }),
+        new Platform({ x: 998, y: 337 }),
+        new Platform({ x: 1398, y: 157 }),
+        new Platform({ x: 1698, y: 557 }),
+        new Platform({ x: 1998, y: 326 }),
+        new Platform({ x: 2398, y: 221 }),
+        new Platform({ x: 2698, y: 100 }),
+        new Platform({ x: 2932, y: 57, }),
+        new Platform({ x: 3432, y: 417, }),
+        new Platform({ x: 3799, y: 221, }),
+        new Platform({ x: 4032, y: 117, }),
+         new Platform({ x: 4432, y: 557, }),
+         new Platform({ x: 4632, y: 557, }),
+         new Platform({ x: 4832, y: 557, }),
+         new Platform({ x: 5032, y: 557, })
+        
     ];
 
     let genericObjects = [
@@ -99,7 +148,7 @@ let player = new Player();
             x: 0,
             y: 0,
             image: createImage('./imgs/hills.png'),  // Corrected image source --- © Code by | Aditya Tomar
-            width: 2500
+            width: 10000
         })
     ];
 
@@ -118,8 +167,22 @@ function init() {
      player = new Player();
      platforms = [
         new Platform({ x: -1, y: 557 }),
-        new Platform({ x: 198, y: 557 }),
-        new Platform({ x: 498, y: 557 })
+        new Platform({ x: 198, y: 257 }),
+        new Platform({ x: 498, y: 357 }),
+        new Platform({ x: 998, y: 337 }),
+        new Platform({ x: 1398, y: 157 }),
+        new Platform({ x: 1698, y: 557 }),
+        new Platform({ x: 1998, y: 326 }),
+        new Platform({ x: 2398, y: 221 }),
+        new Platform({ x: 2698, y: 100 }),
+        new Platform({ x: 2932, y: 57, }),
+        new Platform({ x: 3432, y: 417, }),
+        new Platform({ x: 3799, y: 221, }),
+        new Platform({ x: 4032, y: 117, }),
+         new Platform({ x: 4432, y: 557, }),
+         new Platform({ x: 4632, y: 557, }),
+         new Platform({ x: 4832, y: 557, }),
+         new Platform({ x: 5032, y: 557, }),
     ];
 
      genericObjects = [
@@ -127,7 +190,7 @@ function init() {
             x: 0,
             y: 0,
             image: createImage('./imgs/background.png'),  // Corrected image source --- © Code by | Aditya Tomar
-            width: canvas.width,  // Set background to cover the full canvas width --- © Code by | Aditya Tomar
+            width: canvas.width, // Set background to cover the full canvas width --- © Code by | Aditya Tomar
             height: canvas.height  // Set background to cover the full canvas height --- © Code by | Aditya Tomar
         }),
 
@@ -135,7 +198,7 @@ function init() {
             x: 0,
             y: 0,
             image: createImage('./imgs/hills.png'),  // Corrected image source --- © Code by | Aditya Tomar
-            width: 2500
+            width: 10000
         })
     ];
 
@@ -161,30 +224,32 @@ function animate() {
 
     // Handle movement controls for the player
     if (keys.right.pressed && player.position.x < 400) {
-        player.velocity.x = 5;
-    } else if (keys.left.pressed && player.position.x > 100) {
-        player.velocity.x = -5;
+        player.velocity.x = player.speed;
+    } else if ((keys.left.pressed && player.position.x >
+        100) || keys.left.pressed && scrollOffset == 0
+    && player.position.x > 0) {
+        player.velocity.x = -player.speed;
     } else {
         player.velocity.x = 0;
 
         // Moving the platforms and generic objects (background, hills)
         if (keys.right.pressed) {
-            scrollOffset += 5;
+            scrollOffset += player.speed;
             backgroundOffset += 2; // Slow background scroll for a parallax effect
             platforms.forEach(platform => {
-                platform.position.x -= 5;
+                platform.position.x -= player.speed;
             });
             genericObjects.forEach(genericObject => {
-                genericObject.position.x -= 3;
+                genericObject.position.x -= player.speed * 0.66;
             });
-        } else if (keys.left.pressed) {
-            scrollOffset -= 5;
+        } else if (keys.left.pressed && scrollOffset >0) {
+            scrollOffset -= player.speed;
             backgroundOffset -= 2;
             platforms.forEach(platform => {
-                platform.position.x += 5;
+                platform.position.x += player.speed;
             });
             genericObjects.forEach(genericObject => {
-                genericObject.position.x += 3;
+                genericObject.position.x += player.speed * 0.66;
             });
         }
     }
@@ -202,7 +267,7 @@ function animate() {
     });
 
     // Winning condition check
-    if (scrollOffset > 10000) {
+    if (scrollOffset > 4600) {
         console.log('You Win');
     }
 
@@ -227,6 +292,7 @@ addEventListener('keydown', ({ keyCode }) => {
         case 68:
             console.log('right');
             keys.right.pressed = true;
+            player.currentSprite = player.sprites.run.right
             break;
         case 87:
             console.log('up');
